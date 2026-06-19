@@ -1,0 +1,113 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-violet: var(--violet);
+  --color-cyan: var(--cyan);
+
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* MIRROR — Dark only, futuristic obsidian */
+  --background: oklch(0.14 0.01 270);            /* deep obsidian */
+  --foreground: oklch(0.98 0.005 270);
+  --card: oklch(0.18 0.012 270);
+  --card-foreground: oklch(0.98 0.005 270);
+  --popover: oklch(0.16 0.012 270);
+  --popover-foreground: oklch(0.98 0.005 270);
+  --primary: oklch(0.65 0.22 295);               /* electric violet #8B5CF6 */
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.22 0.015 270);
+  --secondary-foreground: oklch(0.96 0.005 270);
+  --muted: oklch(0.22 0.012 270);
+  --muted-foreground: oklch(0.68 0.015 270);
+  --accent: oklch(0.72 0.15 210);                /* cyan #06B6D4 */
+  --accent-foreground: oklch(0.12 0.01 270);
+  --destructive: oklch(0.62 0.23 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.65 0.22 295);
+
+  --violet: oklch(0.65 0.22 295);
+  --cyan: oklch(0.72 0.15 210);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html, body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient orbs */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(600px circle at 15% 20%, rgba(139, 92, 246, 0.18), transparent 60%),
+      radial-gradient(700px circle at 85% 80%, rgba(6, 182, 212, 0.12), transparent 60%);
+    z-index: 0;
+  }
+}
+
+@utility glass {
+  background: color-mix(in oklab, white 4%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid color-mix(in oklab, white 8%, transparent);
+}
+
+@utility glow-violet {
+  box-shadow: 0 0 24px rgba(139, 92, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+@utility glow-cyan {
+  box-shadow: 0 0 24px rgba(6, 182, 212, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+@utility text-gradient {
+  background: linear-gradient(90deg, #c4b5fd, #67e8f9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
