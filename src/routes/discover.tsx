@@ -9,6 +9,7 @@ import { StyleBlueprint } from "@/components/mirror/StyleBlueprint";
 import { GrowthRoadmap } from "@/components/mirror/GrowthRoadmap";
 import { LoadingSequence } from "@/components/mirror/LoadingSequence";
 import { SuccessModal } from "@/components/mirror/SuccessModal";
+import { generatePersonaFn } from "@/api/persona";
 
 export const Route = createFileRoute("/discover")({
   head: () => ({
@@ -25,6 +26,22 @@ type Step = "interests" | "loading" | "creators" | "style-builder" | "blueprint"
 function DiscoverPage() {
   const [step, setStep] = useState<Step>("interests");
   const [modal, setModal] = useState(false);
+  const [interests, setInterests] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerateBlueprint = async (answers: Record<string, string>) => {
+    setIsGenerating(true);
+    try {
+      await generatePersonaFn({ data: { interests, styleAnswers: answers } });
+      setStep("blueprint");
+    } catch (e) {
+      console.error(e);
+      // fallback to next step even on error for MVP
+      setStep("blueprint");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex relative">
@@ -71,7 +88,10 @@ function DiscoverPage() {
             {step === "interests" && (
               <InterestSelector
                 key="interests"
-                onContinue={() => setStep("loading")}
+                onContinue={(selected) => {
+                  setInterests(selected);
+                  setStep("loading");
+                }}
               />
             )}
 
@@ -91,10 +111,20 @@ function DiscoverPage() {
             )}
 
             {step === "style-builder" && (
-              <PersonalStyleBuilder
-                key="builder"
-                onContinue={() => setStep("blueprint")}
-              />
+              <div className="relative">
+                {isGenerating && (
+                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-xl">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="size-8 border-2 border-violet border-t-transparent rounded-full animate-spin" />
+                      <div className="text-sm font-medium animate-pulse text-violet">Synthesizing Style DNA...</div>
+                    </div>
+                  </div>
+                )}
+                <PersonalStyleBuilder
+                  key="builder"
+                  onContinue={handleGenerateBlueprint}
+                />
+              </div>
             )}
 
             {step === "blueprint" && (

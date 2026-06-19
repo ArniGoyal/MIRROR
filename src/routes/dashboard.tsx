@@ -6,6 +6,8 @@ import { PlatformCards } from "@/components/mirror/PlatformCards";
 import { ContentPatterns } from "@/components/mirror/ContentPatterns";
 import { AudienceEngagement } from "@/components/mirror/AudienceEngagement";
 
+import { getPersonaFn } from "@/api/persona";
+
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
@@ -13,10 +15,16 @@ export const Route = createFileRoute("/dashboard")({
       { name: "description", content: "Explore your creator voice, Style DNA analysis, and audience metrics." },
     ],
   }),
+  loader: async () => {
+    const persona = await getPersonaFn();
+    return { persona };
+  },
   component: DashboardPage,
 });
 
 function DashboardPage() {
+  const { persona } = Route.useLoaderData();
+
   return (
     <div className="min-h-screen flex relative">
       <Sidebar />
@@ -39,12 +47,12 @@ function DashboardPage() {
 
         {/* Dashboard Content */}
         <div className="flex-1 px-4 sm:px-8 py-8 overflow-y-auto space-y-8">
-          <StyleDNAProfile />
+          <StyleDNAProfile persona={persona} />
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               <PlatformCards />
-              <ContentPatterns />
+              <ContentPatterns persona={persona} />
             </div>
             <div className="space-y-8">
               <StyleMetrics />

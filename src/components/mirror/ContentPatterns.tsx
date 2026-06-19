@@ -18,7 +18,26 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
-export function ContentPatterns() {
+export function ContentPatterns({ persona }: { persona?: any }) {
+  // Use persona if available, otherwise fallback to mock data
+  const patternsToDisplay = persona ? [
+    {
+      id: "hook", category: "Hook Pattern", title: persona.hookPattern.split("—")[0] || "Hook Strategy",
+      stat: "85%", statLabel: "alignment", description: persona.hookPattern,
+      example: "Generated from your Style DNA", icon: "zap"
+    },
+    {
+      id: "cta", category: "CTA Style", title: "Action Format",
+      stat: "90%", statLabel: "conversion", description: persona.ctaStyle,
+      example: "Direct imperative", icon: "target"
+    },
+    {
+      id: "story", category: "Storytelling", title: "Structure",
+      stat: "Core", statLabel: "framework", description: persona.storytellingFramework,
+      example: "Signature narrative flow", icon: "book"
+    }
+  ] : contentPatterns;
+
   return (
     <motion.div
       variants={container}
@@ -31,7 +50,7 @@ export function ContentPatterns() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {contentPatterns.map((p) => {
+        {patternsToDisplay.map((p) => {
           const Icon = iconMap[p.icon] || Zap;
           return (
             <motion.div

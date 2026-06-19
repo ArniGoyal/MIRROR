@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Send, Sparkles, Copy, RefreshCcw, CheckCircle2, ArrowLeftRight, Wand2 } from "lucide-react";
 import { generationExamples } from "@/lib/mock-data";
+import { generateContentFn } from "@/api/generate";
 
 const platformOptions = [
   { id: "linkedin", label: "LinkedIn", icon: "in" },
@@ -18,22 +19,41 @@ export function AlterEgoGenerator() {
   const [showComparison, setShowComparison] = useState(false);
   const [typedText, setTypedText] = useState("");
   const [copied, setCopied] = useState(false);
+  const [generatedResult, setGeneratedResult] = useState("");
+  const [consistencyScore, setConsistencyScore] = useState(0);
 
   const data = generationExamples[platform];
 
-  const generate = () => {
-    if (!prompt.trim()) return;
+  const generate = async (currentPrompt?: string) => {
+    const textToGenerate = currentPrompt || prompt.trim() || data.prompt;
+    if (!textToGenerate) return;
+    
+    // Update the textarea to show what we are actually generating if it was empty
+    if (!prompt.trim()) {
+      setPrompt(textToGenerate);
+    }
+    
     setStage("generating");
     setTypedText("");
-    setTimeout(() => {
+    
+    try {
+      const result = await generateContentFn({ data: { prompt: textToGenerate, platform } });
+      setGeneratedResult(result.text);
+      setConsistencyScore(result.consistencyScore);
       setStage("result");
-    }, 2200);
+    } catch (e) {
+      console.error(e);
+      // Fallback
+      setGeneratedResult(data.mirrorOutput);
+      setConsistencyScore(85);
+      setStage("result");
+    }
   };
 
   // Typing effect
   useEffect(() => {
-    if (stage !== "result") return;
-    const text = data.mirrorOutput;
+    if (stage !== "result" || !generatedResult) return;
+    const text = generatedResult;
     let i = 0;
     const interval = setInterval(() => {
       setTypedText(text.slice(0, i + 1));
@@ -41,10 +61,10 @@ export function AlterEgoGenerator() {
       if (i >= text.length) clearInterval(interval);
     }, 8);
     return () => clearInterval(interval);
-  }, [stage, data.mirrorOutput]);
+  }, [stage, generatedResult]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(data.mirrorOutput);
+    navigator.clipboard.writeText(generatedResult);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -114,7 +134,7 @@ export function AlterEgoGenerator() {
           <div className="flex items-center justify-between mt-4">
             <span className="text-[11px] text-muted-foreground">{prompt.length} characters</span>
             <button
-              onClick={() => { setPrompt(data.prompt); generate(); }}
+              onClick={() => generate()}
               disabled={stage === "generating"}
               className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold bg-gradient-to-r from-violet to-cyan text-white shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:-translate-y-0.5 transition disabled:opacity-50 disabled:translate-y-0"
             >
@@ -225,7 +245,7 @@ export function AlterEgoGenerator() {
                 >
                   <div className="rounded-xl border border-white/8 bg-black/30 p-4 mb-4 max-h-[320px] overflow-y-auto">
                     <div className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">{typedText}</div>
-                    {typedText.length < data.mirrorOutput.length && (
+                    {typedText.length < generatedResult.length && (
                       <span className="inline-block w-0.5 h-4 bg-cyan animate-pulse ml-0.5" />
                     )}
                   </div>
@@ -234,7 +254,7 @@ export function AlterEgoGenerator() {
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="size-4 text-cyan" />
                       <span className="text-xs text-muted-foreground">
-                        Consistency: <span className="text-foreground font-medium">{data.consistencyScore}%</span>
+                        Consistency: <span className="text-foreground font-medium">{consistencyScore}%</span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -263,7 +283,7 @@ export function AlterEgoGenerator() {
                   </div>
                   <div className="rounded-xl border border-cyan/20 bg-cyan/5 p-4 max-h-[160px] overflow-y-auto">
                     <div className="text-[10px] uppercase tracking-widest text-cyan mb-2">MIRROR Output</div>
-                    <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">{data.mirrorOutput}</div>
+                    <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">{generatedResult}</div>
                   </div>
                 </motion.div>
               )}

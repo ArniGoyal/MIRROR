@@ -3,13 +3,14 @@ import { Dna, Activity, Layers, BarChart3 } from "lucide-react";
 import { styleDNA } from "@/lib/mock-data";
 import { useEffect, useState } from "react";
 
-export function StyleDNAProfile() {
+export function StyleDNAProfile({ persona }: { persona: any }) {
   const [animatedScore, setAnimatedScore] = useState(0);
+  const score = persona?.identityScore || styleDNA.identityScore;
 
   useEffect(() => {
-    const timer = setTimeout(() => setAnimatedScore(styleDNA.identityScore), 200);
+    const timer = setTimeout(() => setAnimatedScore(score), 200);
     return () => clearTimeout(timer);
-  }, []);
+  }, [score]);
 
   const circumference = 2 * Math.PI * 54;
   const strokeDashoffset = circumference - (circumference * animatedScore) / 100;
