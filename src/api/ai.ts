@@ -17,12 +17,16 @@ export async function generateDualMode(prompt: string | any[], systemContext: st
   if (google) {
     console.log(`[MIRROR AI] Using REAL Gemini API for ${mode} generation`);
     try {
-      const { text } = await generateText({
+      const options: any = {
         model: google("gemini-2.5-flash"),
         system: systemContext,
-        prompt: typeof prompt === "string" ? prompt : undefined,
-        messages: Array.isArray(prompt) ? prompt : undefined,
-      });
+      };
+      if (typeof prompt === "string") {
+        options.prompt = prompt;
+      } else {
+        options.messages = prompt;
+      }
+      const { text } = await generateText(options);
       return text;
     } catch (e) {
       console.error("[MIRROR AI] Real AI Generation failed, falling back to simulation", e);

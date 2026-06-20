@@ -32,14 +32,14 @@ export const generatePersonaFn = createServerFn({ method: "POST" })
         if (fs.existsSync(filePath)) {
           const buffer = fs.readFileSync(filePath);
           contentParts.push({ type: 'text', text: `Image caption: ${source.content}` });
-          contentParts.push({ type: 'image', image: buffer });
+          contentParts.push({ type: 'image', image: new Uint8Array(buffer) });
         }
       } else if (source.type === "video" && source.url) {
         const filePath = path.join(process.cwd(), "public", source.url);
         if (fs.existsSync(filePath)) {
           const buffer = fs.readFileSync(filePath);
           contentParts.push({ type: 'text', text: `Video context: ${source.content}` });
-          contentParts.push({ type: 'file', data: buffer, mimeType: "video/mp4" });
+          contentParts.push({ type: 'file', data: new Uint8Array(buffer), mimeType: "video/mp4" });
         }
       }
     }
