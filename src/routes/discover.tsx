@@ -4,7 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { Sidebar } from "@/components/mirror/Sidebar";
 import { InterestSelector } from "@/components/mirror/InterestSelector";
 import { CreatorShowcase } from "@/components/mirror/CreatorShowcase";
-import { PersonalStyleBuilder } from "@/components/mirror/PersonalStyleBuilder";
+import { SourceIngestion } from "@/components/mirror/SourceIngestion";
 import { StyleBlueprint } from "@/components/mirror/StyleBlueprint";
 import { GrowthRoadmap } from "@/components/mirror/GrowthRoadmap";
 import { LoadingSequence } from "@/components/mirror/LoadingSequence";
@@ -29,10 +29,10 @@ function DiscoverPage() {
   const [interests, setInterests] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleGenerateBlueprint = async (answers: Record<string, string>) => {
+  const handleGenerateBlueprint = async (sources: { type: string; content: string; url?: string }[]) => {
     setIsGenerating(true);
     try {
-      await generatePersonaFn({ data: { interests, styleAnswers: answers } });
+      await generatePersonaFn({ data: { interests, sources } });
       setStep("blueprint");
     } catch (e) {
       console.error(e);
@@ -120,7 +120,7 @@ function DiscoverPage() {
                     </div>
                   </div>
                 )}
-                <PersonalStyleBuilder
+                <SourceIngestion
                   key="builder"
                   onContinue={handleGenerateBlueprint}
                 />

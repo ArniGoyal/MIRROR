@@ -724,3 +724,36 @@ export const growthRoadmap: RoadmapWeek[] = [
     focus: "Identity",
   },
 ];
+
+// ─── Source Ingestion ───────────────────────────────────────────────────────
+
+export interface MediaSource {
+  id: string;
+  type: "text" | "video" | "image";
+  platform: string;
+  content: string; // The text content or caption
+  url?: string; // URL to the media file if it's an image or video
+}
+
+export const mockSources: MediaSource[] = [
+  {
+    id: "src_1",
+    type: "text",
+    platform: "X / Twitter",
+    content: "The biggest lie in content: 'Just post consistently.'\n\nNo. Post consistently with STRUCTURE.\n\nRandom consistency is just noise. Your archive is your compound interest. Build it deliberately.",
+  },
+  {
+    id: "src_2",
+    type: "video",
+    platform: "YouTube",
+    url: "/samples/tech_video.mp4",
+    content: "You don't need motivation. Every creator who's ever built something real will tell you the same thing — motivation is a trap. It comes and goes like weather. What you need is architecture. A system so embedded in your day that consistency becomes invisible. Start today. Not tomorrow. Today.",
+  },
+  {
+    id: "src_3",
+    type: "image",
+    platform: "Instagram",
+    url: "/samples/tech_image.png",
+    content: "I failed publicly. 147 people watched.\n\nIt was my third video. I forgot my lines. Stumbled through a framework I barely understood. Posted it anyway because 'consistency.'\n\nThat video got 3 likes. One was my mom.\n\nBut here's what that failure built:\n→ Thick skin\n→ A baseline\n→ Proof I could ship imperfect work\n\nYour failure isn't a signal to stop. It's a receipt that you started.",
+  }
+];

@@ -26,3 +26,6 @@ dist-ssr
 # Tanstack
 .tanstack
 routeTree.gen.ts
+
+# Env
+.env

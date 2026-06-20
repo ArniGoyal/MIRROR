@@ -3,6 +3,8 @@ import { db, personas } from "../db/index";
 import { eq } from "drizzle-orm";
 import { generateDualMode } from "./ai";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 
 export const getPersonaFn = createServerFn({ method: "GET" }).handler(async () => {
   // Hardcoded 'user_1' for MVP simplicity
@@ -17,17 +19,48 @@ export const getPersonaFn = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const generatePersonaFn = createServerFn({ method: "POST" })
-  .validator((data: { interests: string[]; styleAnswers: Record<string, string> }) => data)
+  .validator((data: { interests: string[]; sources: { type: string; content: string; url?: string }[] }) => data)
   .handler(async ({ data }) => {
-    const prompt = `Analyze these interests: ${data.interests.join(", ")} and quiz answers: ${JSON.stringify(data.styleAnswers)}. 
-    Return a JSON object with tone, hookPattern, ctaStyle, storytellingFramework, and an array of 5 keywords.`;
+    const contentParts: any[] = [];
+    contentParts.push({ type: 'text', text: `Analyze these interests: ${data.interests.join(", ")} and the following raw content from the creator's past posts/videos. Return a JSON object with tone, hookPattern, ctaStyle, storytellingFramework, and an array of 5 keywords.` });
+
+    for (const source of data.sources) {
+      if (source.type === "text") {
+        contentParts.push({ type: 'text', text: `Text post:\n${source.content}` });
+      } else if (source.type === "image" && source.url) {
+        const filePath = path.join(process.cwd(), "public", source.url);
+        if (fs.existsSync(filePath)) {
+          const buffer = fs.readFileSync(filePath);
+          contentParts.push({ type: 'text', text: `Image caption: ${source.content}` });
+          contentParts.push({ type: 'image', image: buffer });
+        }
+      } else if (source.type === "video" && source.url) {
+        const filePath = path.join(process.cwd(), "public", source.url);
+        if (fs.existsSync(filePath)) {
+          const buffer = fs.readFileSync(filePath);
+          contentParts.push({ type: 'text', text: `Video context: ${source.content}` });
+          contentParts.push({ type: 'file', data: buffer, mimeType: "video/mp4" });
+        }
+      }
+    }
+
+    const promptMessage = [{ role: "user", content: contentParts }];
     
     const systemContext = "You are an expert creator analyst extracting a user's unique Style DNA.";
 
-    const jsonString = await generateDualMode(prompt, systemContext, "persona");
+    const jsonString = await generateDualMode(promptMessage, systemContext, "persona");
     
     try {
-      const parsed = JSON.parse(jsonString);
+      let cleanJson = jsonString.trim();
+      if (cleanJson.startsWith("```json")) {
+        cleanJson = cleanJson.substring(7);
+      } else if (cleanJson.startsWith("```")) {
+        cleanJson = cleanJson.substring(3);
+      }
+      if (cleanJson.endsWith("```")) {
+        cleanJson = cleanJson.slice(0, -3);
+      }
+      const parsed = JSON.parse(cleanJson.trim());
       
       const newPersona = {
         id: `persona_${crypto.randomUUID()}`,

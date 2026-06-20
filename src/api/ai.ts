@@ -13,14 +13,15 @@ const google = apiKey ? createGoogleGenerativeAI({ apiKey }) : null;
  * Dual-Mode AI Generation
  * Uses real LLM if API key is present, otherwise falls back to highly realistic simulated responses.
  */
-export async function generateDualMode(prompt: string, systemContext: string, mode: "persona" | "content"): Promise<string> {
+export async function generateDualMode(prompt: string | any[], systemContext: string, mode: "persona" | "content"): Promise<string> {
   if (google) {
     console.log(`[MIRROR AI] Using REAL Gemini API for ${mode} generation`);
     try {
       const { text } = await generateText({
         model: google("gemini-2.5-flash"),
         system: systemContext,
-        prompt: prompt,
+        prompt: typeof prompt === "string" ? prompt : undefined,
+        messages: Array.isArray(prompt) ? prompt : undefined,
       });
       return text;
     } catch (e) {
@@ -47,7 +48,8 @@ export async function generateDualMode(prompt: string, systemContext: string, mo
 
   if (mode === "content") {
     // If it's a specific platform from our mock data, return the realistic mirror output
-    const platformMatch = prompt.match(/linkedin|twitter|x|instagram/i)?.[0]?.toLowerCase();
+    const promptStr = typeof prompt === "string" ? prompt : JSON.stringify(prompt);
+    const platformMatch = promptStr.match(/linkedin|twitter|x|instagram/i)?.[0]?.toLowerCase();
     
     if (platformMatch && platformMatch.includes("linkedin")) {
       return generationExamples.linkedin.mirrorOutput;
